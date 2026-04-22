@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MANAGEMENT REPORT - PT TSI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            min-height: 100vh;
+        }
+        
+        .color-primary { background-color: #1E3A8A; }
+        .text-primary { color: #1E3A8A; }
+        
+        .fade-in { 
+            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .menu-card {
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+
+        .interactive-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px -10px rgba(30, 58, 138, 0.2);
+            border-color: #1E3A8A;
+            cursor: pointer;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        .table-container {
+            max-height: 60vh;
+            overflow-x: auto;
+            overflow-y: auto;
+        }
+
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #1e293b;
+            color: #fff;
+            text-align: center;
+            border-radius: 12px;
+            padding: 16px;
+            position: fixed;
+            z-index: 100;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        #toast.show {
+            visibility: visible;
+            animation: fadein_t 0.5s, fadeout_t 0.5s 2.5s;
+        }
+
+        @keyframes fadein_t { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout_t { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+    </style>
+</head>
+<body class="flex flex-col items-center p-4 sm:p-8">
+
+    <main class="w-full max-w-6xl flex-grow glass-panel p-6 sm:p-10 rounded-3xl shadow-2xl relative fade-in">
+        <!-- Header -->
+        <header class="w-full mb-10 pb-6 border-b-2 border-slate-100 flex flex-col items-center">
+            <div class="mb-4">
+                <!-- Menggunakan logo lokal default_logo -->
+                <img src="default_logo.png" 
+                     onerror="this.src='default_logo.jpg'; this.onerror=null; if(this.src.endsWith('jpg')) { this.src='https://via.placeholder.com/150?text=TSI+LOGO'; }" 
+                     alt="Logo PT TSI" 
+                     class="w-24 h-24 object-contain">
+            </div>
+            
+            <div class="color-primary text-white px-8 py-4 rounded-2xl shadow-lg flex flex-col items-center gap-1">
+                <h1 id="screenTitle" class="text-xl sm:text-2xl font-black uppercase tracking-[0.1em] text-center">
+                    MENU LAPORAN
+                </h1>
+                <div class="h-0.5 w-16 bg-amber-500 rounded-full my-1"></div>
+                <h2 class="text-sm sm:text-lg font-bold uppercase tracking-widest text-blue-100 text-center">
+                    PAPERLESS PROJECT PT TSI
+                </h2>
+            </div>
+            <div class="mt-3 text-[10px] font-bold text-slate-400 tracking-[0.3em] uppercase">
+                Digitalization Initiative v2.0
+            </div>
+        </header>
+
+        <!-- DASHBOARD MENU -->
+        <div id="mainDashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 fade-in">
+            <!-- Availability Card -->
+            <div onclick="openEmptyReport('Availability (PA & MA)')" class="menu-card interactive-card bg-white p-6 rounded-2xl flex flex-col items-center text-center group">
+                <div class="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-800 transition-colors">
+                    <i data-lucide="bar-chart-3" class="w-8 h-8 text-blue-800 group-hover:text-white"></i>
+                </div>
+                <h3 class="font-bold text-slate-800 uppercase text-sm">Availability (PA & MA)</h3>
+                <p class="text-[10px] text-slate-400 mt-2">Monitor Physical & Mechanical Availability.</p>
+            </div>
+
+            <!-- Maintenance History Card -->
+            <div onclick="initReport('Maintenance History')" class="menu-card interactive-card bg-white p-6 rounded-2xl flex flex-col items-center text-center group">
+                <div class="w-14 h-14 bg-emerald-50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-emerald-600 transition-colors">
+                    <i data-lucide="history" class="w-8 h-8 text-emerald-600 group-hover:text-white"></i>
+                </div>
+                <h3 class="font-bold text-slate-800 uppercase text-sm">Maintenance History</h3>
+                <p class="text-[10px] text-slate-400 mt-2">Database Riwayat Perbaikan Teknis.</p>
+            </div>
+
+            <!-- Preventive Monitoring Card -->
+            <div onclick="initReport('Preventive Maintenance')" class="menu-card interactive-card bg-white p-6 rounded-2xl flex flex-col items-center text-center group">
+                <div class="w-14 h-14 bg-amber-50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-amber-500 transition-colors">
+                    <i data-lucide="calendar-check" class="w-8 h-8 text-amber-500 group-hover:text-white"></i>
+                </div>
+                <h3 class="font-bold text-slate-800 uppercase text-sm">Monitoring Preventive Maintenance</h3>
+                <p class="text-[10px] text-slate-400 mt-2">Penjadwalan & Realisasi PM Unit.</p>
+            </div>
+
+            <!-- Health Check Card -->
+            <div onclick="openEmptyReport('Health Check Unit & Machine')" class="menu-card interactive-card bg-white p-6 rounded-2xl flex flex-col items-center text-center group">
+                <div class="w-14 h-14 bg-rose-50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-rose-600 transition-colors">
+                    <i data-lucide="activity" class="w-8 h-8 text-rose-600 group-hover:text-white"></i>
+                </div>
+                <h3 class="font-bold text-slate-800 uppercase text-sm">Health Check Unit & Machine</h3>
+                <p class="text-[10px] text-slate-400 mt-2">Analisa Kondisi Kesehatan Aset.</p>
+            </div>
+
+            <!-- ETR Card -->
+            <div onclick="openEmptyReport('Log Emergency Trouble (ETR)')" class="menu-card interactive-card bg-white p-6 rounded-2xl flex flex-col items-center text-center group">
+                <div class="w-14 h-14 bg-red-50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-red-600 transition-colors">
+                    <i data-lucide="alert-triangle" class="w-8 h-8 text-red-600 group-hover:text-white"></i>
+                </div>
+                <h3 class="font-bold text-slate-800 uppercase text-sm">Log Emergency Trouble (ETR)</h3>
+                <p class="text-[10px] text-slate-400 mt-2">Respon Time Kerusakan Darurat.</p>
+            </div>
+
+            <!-- Consumption Card -->
+            <div class="menu-card bg-white p-6 rounded-2xl flex flex-col items-center text-center">
+                <div class="w-14 h-14 bg-indigo-50 rounded-xl flex items-center justify-center mb-4">
+                    <i data-lucide="droplets" class="w-8 h-8 text-indigo-600"></i>
+                </div>
+                <h3 class="font-bold text-slate-800 uppercase text-sm">Consumption Dashboard</h3>
+                <p class="text-[10px] text-slate-400 mt-1 mb-4">Database Pemakaian Pelumas.</p>
+                
+                <div class="grid grid-cols-2 gap-2 w-full">
+                    <button onclick="initReport('Oil')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black py-3 rounded-xl transition-all shadow-md active:scale-95 flex flex-col items-center gap-1">
+                        <i data-lucide="droplet" class="w-3 h-3"></i> OIL DATA
+                    </button>
+                    <button onclick="initReport('Grease')" class="bg-slate-700 hover:bg-slate-800 text-white text-[10px] font-black py-3 rounded-xl transition-all shadow-md active:scale-95 flex flex-col items-center gap-1">
+                        <i data-lucide="waves" class="w-3 h-3"></i> GREASE DATA
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- REPORT VIEWER AREA -->
+        <div id="reportViewer" class="hidden space-y-6 fade-in">
+            <div class="flex justify-between items-center mb-4">
+                <button onclick="backToDashboard()" class="flex items-center gap-2 text-blue-800 font-bold text-sm hover:underline">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Kembali
+                </button>
+                <div id="statusBadge" class="hidden flex items-center gap-2 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-[10px] font-black uppercase tracking-tighter">
+                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> Data Terhubung
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div id="viewerControls" class="hidden flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
+                <div class="relative flex-grow">
+                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5"></i>
+                    <input type="text" id="tableSearch" onkeyup="handleSearch()" placeholder="Cari data di database ini..." class="w-full pl-12 pr-4 py-3 bg-white border-2 border-slate-100 rounded-xl focus:border-blue-500 outline-none transition-all font-medium text-sm shadow-sm">
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div id="reportContent" class="bg-white border-2 border-slate-50 rounded-3xl p-6 md:p-10 text-center shadow-sm relative overflow-hidden">
+                <!-- Loading -->
+                <div id="loadingIndicator" class="hidden py-20 space-y-4">
+                    <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-800 border-t-transparent"></div>
+                    <p class="font-bold text-slate-500 animate-pulse tracking-widest text-xs uppercase">Menghubungkan ke Server Database...</p>
+                </div>
+
+                <!-- Empty/Initial State -->
+                <div id="emptyState" class="space-y-4 py-10">
+                    <div class="mx-auto w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center">
+                        <i data-lucide="database-zap" class="w-10 h-10 text-slate-200"></i>
+                    </div>
+                    <div>
+                        <h4 id="activeReportTitle" class="text-xl font-black text-slate-800 uppercase">Pilih Laporan</h4>
+                        <p id="emptyMsg" class="text-slate-400 text-sm max-w-md mx-auto">Database untuk laporan ini belum terhubung atau sedang dalam pengembangan.</p>
+                    </div>
+                </div>
+
+                <!-- Table UI -->
+                <div id="tableWrapper" class="hidden flex flex-col">
+                    <div class="table-container custom-scrollbar border border-slate-100 rounded-xl">
+                        <table class="w-full text-left text-[11px] border-collapse whitespace-nowrap">
+                            <thead id="tableHeader" class="bg-slate-800 text-white font-bold uppercase tracking-wider sticky top-0 z-10">
+                            </thead>
+                            <tbody id="tableBody" class="divide-y divide-slate-100">
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div class="mt-8 flex flex-col sm:flex-row justify-between items-center gap-6 pt-6 border-t border-slate-50">
+                        <div class="text-center sm:text-left">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Database Position</p>
+                            <p class="text-xs font-semibold text-slate-600">
+                                Baris <span id="pageRange" class="text-blue-800 font-bold">0 - 0</span> dari <span id="totalItems" class="text-blue-800 font-bold">0</span> entri
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button onclick="changePage(-1)" id="prevBtn" class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all font-black text-[10px] text-slate-600">
+                                PREV
+                            </button>
+                            <div class="px-5 py-2 bg-blue-800 rounded-xl text-[10px] font-black text-white shadow-md">
+                                HAL <span id="currentPageNum">1</span>
+                            </div>
+                            <button onclick="changePage(1)" id="nextBtn" class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all font-black text-[10px] text-slate-600">
+                                NEXT
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast">Database Berhasil Disinkronisasi!</div>
+
+    <!-- Updated Footer -->
+    <footer class="mt-8 text-center text-slate-400 px-4 pb-8">
+        <p class="font-bold text-slate-500 tracking-tight uppercase">&copy; 2026 Paperless Project - PT TSI. All rights reserved.</p>
+        <p class="text-[10px] mt-1">System Architecture by: <span class="text-slate-600 font-semibold uppercase">Imam Wahyu Ramadhan, S.T.</span> | <span class="text-amber-600 font-bold uppercase tracking-tighter">Project 2.0</span></p>
+    </footer>
+
+    <script>
+        const DATABASE_URLS = {
+            'Maintenance History': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQqLKhK6-8HdngaVv6U-hphTQG9DbF0xDd3YQalzxmJTXpwrwjiLt6osdd2z6YHskYcc6o6Uv1Oi6zb/pub?gid=1321349573&single=true&output=csv',
+            'Oil': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTbRFzvq6gts4l7PUzMrVeP259PSpxPp7MhKXumbLQa6d8cvNcZp-1Kh5764YtPloonQuWQCD95IUH5/pub?gid=1067509985&single=true&output=csv',
+            'Grease': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRyfLKgzVDFDqT0c-jHRnm0oJoaFDt1Y5VMSpnT5CHX4Un-HBr0MSnxSofSjHJEp1dscfQlcD2ooC-i/pub?gid=406723588&single=true&output=csv',
+            'Preventive Maintenance': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSF7MHwUyGUpiLfDbozS4eTOaFRLwMdnmp78Heq2PA5NILBV2jVFR5ZTp5klIH5ps5v3y_clGTP98fo/pub?gid=191643961&single=true&output=csv'
+        };
+
+        let fullData = [];
+        let filteredData = [];
+        let headers = [];
+        let currentPage = 1;
+        const rowsPerPage = 15;
+
+        function initReport(id) {
+            openReport(id);
+            fetchDatabase(id);
+        }
+
+        async function fetchDatabase(id) {
+            const url = DATABASE_URLS[id];
+            if (!url) return;
+
+            toggleLoading(true);
+            try {
+                const response = await fetch(url);
+                const csvText = await response.text();
+                processCSV(csvText);
+                showToast(`Database ${id} Berhasil Dimuat!`);
+            } catch (err) {
+                console.error(err);
+                showToast("Gagal mengambil data dari server!");
+                toggleLoading(false);
+            }
+        }
+
+        function processCSV(text) {
+            const lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
+            if (lines.length < 1) return;
+
+            const parseRow = (line) => {
+                const result = [];
+                let curr = '';
+                let quotes = false;
+                for (let char of line) {
+                    if (char === '"') quotes = !quotes;
+                    else if (char === ',' && !quotes) { result.push(curr.trim()); curr = ''; }
+                    else curr += char;
+                }
+                result.push(curr.trim());
+                return result;
+            };
+
+            headers = parseRow(lines[0]);
+            fullData = lines.slice(1).map(parseRow);
+            filteredData = [...fullData];
+            
+            currentPage = 1;
+            toggleLoading(false);
+            renderTable();
+        }
+
+        function renderTable() {
+            const headEl = document.getElementById('tableHeader');
+            const bodyEl = document.getElementById('tableBody');
+            
+            headEl.innerHTML = `<tr>${headers.map(h => `<th class="px-6 py-4 border-b border-slate-700 font-black text-center">${h}</th>`).join('')}</tr>`;
+
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedItems = filteredData.slice(start, end);
+
+            bodyEl.innerHTML = paginatedItems.map(row => `
+                <tr class="hover:bg-blue-50 transition-colors">
+                    ${row.map((cell, idx) => {
+                        const cleanCell = (cell === null || cell === undefined || cell.toLowerCase() === 'null') ? '' : cell;
+                        
+                        return `
+                            <td class="px-6 py-3 border-b border-slate-100 text-center ${idx === 0 ? 'font-bold text-blue-900 bg-slate-50/20' : 'text-slate-600'}">
+                                ${cleanCell}
+                            </td>
+                        `;
+                    }).join('')}
+                </tr>
+            `).join('');
+
+            updateUI(start + 1, Math.min(end, filteredData.length), filteredData.length);
+        }
+
+        function updateUI(start, end, total) {
+            document.getElementById('pageRange').innerText = total === 0 ? '0' : `${start} - ${end}`;
+            document.getElementById('totalItems').innerText = total;
+            document.getElementById('currentPageNum').innerText = currentPage;
+            
+            const totalPages = Math.ceil(total / rowsPerPage);
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage >= totalPages || total === 0;
+            
+            document.getElementById('tableWrapper').classList.toggle('hidden', total === 0);
+            document.getElementById('viewerControls').classList.remove('hidden');
+            document.getElementById('emptyState').classList.toggle('hidden', total > 0);
+            document.getElementById('statusBadge').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function changePage(dir) {
+            currentPage += dir;
+            renderTable();
+            document.querySelector('.table-container').scrollTop = 0;
+        }
+
+        function handleSearch() {
+            const q = document.getElementById('tableSearch').value.toLowerCase();
+            filteredData = fullData.filter(row => row.some(cell => cell.toLowerCase().includes(q)));
+            currentPage = 1;
+            renderTable();
+        }
+
+        function openReport(name) {
+            document.getElementById('mainDashboard').classList.add('hidden');
+            document.getElementById('reportViewer').classList.remove('hidden');
+            document.getElementById('activeReportTitle').innerText = name;
+            document.getElementById('screenTitle').innerText = name;
+            
+            document.getElementById('tableWrapper').classList.add('hidden');
+            document.getElementById('viewerControls').classList.add('hidden');
+            document.getElementById('statusBadge').classList.add('hidden');
+            document.getElementById('emptyState').classList.remove('hidden');
+            document.getElementById('emptyMsg').innerText = "Database sedang di-sinkronisasi. Mohon tunggu sejenak...";
+        }
+
+        function openEmptyReport(name) {
+            openReport(name);
+            document.getElementById('emptyMsg').innerText = "Koneksi database untuk laporan ini belum tersedia. Silakan hubungi tim IT TSI.";
+        }
+
+        function backToDashboard() {
+            document.getElementById('mainDashboard').classList.remove('hidden');
+            document.getElementById('reportViewer').classList.add('hidden');
+            document.getElementById('screenTitle').innerText = "MENU LAPORAN";
+            document.getElementById('tableSearch').value = "";
+        }
+
+        function toggleLoading(isLoading) {
+            document.getElementById('loadingIndicator').classList.toggle('hidden', !isLoading);
+            document.getElementById('emptyState').classList.toggle('hidden', isLoading);
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById("toast");
+            t.innerText = msg;
+            t.classList.add("show");
+            setTimeout(() => t.classList.remove("show"), 3000);
+        }
+
+        window.onload = () => lucide.createIcons();
+    </script>
+</body>
+</html>
