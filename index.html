@@ -77,15 +77,27 @@
 
         @keyframes fadein_t { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
         @keyframes fadeout_t { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+        /* Style tambahan untuk tombol hover */
+        .btn-main:hover {
+            background-color: #172554;
+            transform: translateY(-1px);
+        }
     </style>
 </head>
-<body class="flex flex-col items-center p-4 sm:p-8">
+<body class="flex flex-col items-center p-4 sm:p-8 relative">
 
     <main class="w-full max-w-6xl flex-grow glass-panel p-6 sm:p-10 rounded-3xl shadow-2xl relative fade-in">
+        
+        <!-- Tombol Kembali ke Halaman Utama (Sesuai Permintaan) -->
+        <a href="https://pttsipaperlessproject2.netlify.app/" class="btn-main absolute top-6 right-6 flex items-center gap-2 px-5 py-2.5 bg-blue-800 text-white rounded-xl shadow-lg font-bold text-[10px] uppercase tracking-wider z-50 transition-all active:scale-95">
+            <i data-lucide="home" class="w-4 h-4"></i>
+            Halaman Utama
+        </a>
+
         <!-- Header -->
         <header class="w-full mb-10 pb-6 border-b-2 border-slate-100 flex flex-col items-center">
             <div class="mb-4">
-                <!-- Menggunakan logo lokal default_logo -->
                 <img src="default_logo.png" 
                      onerror="this.src='default_logo.jpg'; this.onerror=null; if(this.src.endsWith('jpg')) { this.src='https://via.placeholder.com/150?text=TSI+LOGO'; }" 
                      alt="Logo PT TSI" 
@@ -248,7 +260,7 @@
 
     <div id="toast">Database Berhasil Disinkronisasi!</div>
 
-    <!-- Updated Footer -->
+    <!-- Footer -->
     <footer class="mt-8 text-center text-slate-400 px-4 pb-8">
         <p class="font-bold text-slate-500 tracking-tight uppercase">&copy; 2026 Paperless Project - PT TSI. All rights reserved.</p>
         <p class="text-[10px] mt-1">System Architecture by: <span class="text-slate-600 font-semibold uppercase">Imam Wahyu Ramadhan, S.T.</span> | <span class="text-amber-600 font-bold uppercase tracking-tighter">Project 2.0</span></p>
